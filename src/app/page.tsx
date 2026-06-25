@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { read, lineItemsTotal, amountDue } from "@/lib/db";
+import { read, lineItemsTotal, amountDue, clientName } from "@/lib/db";
 import { money, shortDate, relTime } from "@/lib/format";
 import { AppHeader } from "@/components/AppHeader";
 import { StatusPill } from "@/components/StatusPill";
@@ -40,6 +40,11 @@ export default function Dashboard() {
   const awaiting = invoices.filter((i) => i.status === "sent").length;
   const avg = avgDaysToPay(invoices);
 
+  const pending = s.projects
+    .filter((p) => p.status === "pending")
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  const pendingValue = pending.reduce((sum, p) => sum + lineItemsTotal(p.workItems), 0);
+
   return (
     <div className="min-h-full">
       <AppHeader />
@@ -70,6 +75,47 @@ export default function Dashboard() {
             </p>
           </div>
         </section>
+
+        {pending.length > 0 && (
+          <section className="mt-8">
+            <div className="flex items-baseline justify-between mb-3">
+              <h2 className="font-display text-xl">Pending work</h2>
+              <span className="text-muted text-sm">{money(pendingValue)} ready to invoice</span>
+            </div>
+            <ul className="space-y-2.5">
+              {pending.map((p) => {
+                const total = lineItemsTotal(p.workItems);
+                return (
+                  <li key={p.id}>
+                    <Link
+                      href={`/new?project=${p.id}`}
+                      className="card p-4 sm:p-5 flex items-center gap-4 hover:shadow-lg hover:-translate-y-0.5 transition-all border-l-4 !border-l-clay"
+                    >
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2.5">
+                          <p className="font-semibold truncate">{clientName(s, p.clientId)}</p>
+                          <span className="pill pill-draft">
+                            <span className="w-1.5 h-1.5 rounded-full bg-clay" />
+                            Not invoiced
+                          </span>
+                        </div>
+                        <p className="text-muted text-sm mt-0.5 truncate">
+                          {p.eventType}
+                          {p.eventDate ? ` · ${shortDate(p.eventDate)}` : ""} · {p.workItems.length} item
+                          {p.workItems.length === 1 ? "" : "s"}
+                        </p>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <p className="font-display text-lg">{money(total)}</p>
+                        <p className="text-clay text-xs font-semibold">Create invoice →</p>
+                      </div>
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
+        )}
 
         <section className="mt-8">
           <div className="flex items-baseline justify-between mb-3">

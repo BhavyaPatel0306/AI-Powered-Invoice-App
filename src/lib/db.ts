@@ -1,9 +1,9 @@
 import fs from "fs";
 import path from "path";
 import crypto from "crypto";
-import type { Store, Invoice, LineItem } from "./types";
+import type { Store, Invoice, LineItem, Client, Project } from "./types";
 
-const DATA_DIR = path.join(process.cwd(), ".data");
+const DATA_DIR = process.env.FRAME_DATA_DIR || path.join(process.cwd(), ".data");
 const DATA_FILE = path.join(DATA_DIR, "store.json");
 
 export function id(prefix = ""): string {
@@ -96,8 +96,52 @@ function seed(): Store {
     },
   ];
 
+  const clients: Client[] = [
+    invoices[0].client,
+    invoices[1].client,
+    invoices[2].client,
+    { id: id("cl_"), name: "Sofia & James Okafor", email: "sofia.okafor@example.com", phone: "+1 415 555 0188" },
+    { id: id("cl_"), name: "Grace Liu", email: "grace.liu@example.com" },
+  ];
+
+  const projects: Project[] = [
+    {
+      id: id("prj_"),
+      clientId: clients[3].id,
+      title: "Sofia & James — Vineyard Wedding",
+      eventType: "Wedding — Full Day",
+      eventDate: iso(-3),
+      workItems: [
+        { description: "Full-day wedding coverage (10 hrs)", qty: 1, unitPrice: 3800 },
+        { description: "Second shooter", qty: 1, unitPrice: 650 },
+        { description: "Fine-art album (30 spreads)", qty: 1, unitPrice: 900 },
+      ],
+      notes: "Vineyard ceremony + barn reception. Couple wants album. Deliver gallery in 6 weeks.",
+      depositPercent: 0,
+      status: "pending",
+      createdAt: iso(-3),
+    },
+    {
+      id: id("prj_"),
+      clientId: clients[4].id,
+      title: "Grace — Engagement at the Pier",
+      eventType: "Engagement Session",
+      eventDate: iso(2),
+      workItems: [
+        { description: "Engagement session (2 hrs)", qty: 1, unitPrice: 450 },
+        { description: "Premium retouching add-on", qty: 1, unitPrice: 120 },
+      ],
+      notes: "Golden hour at the pier. Wants 3 outfit changes.",
+      depositPercent: 25,
+      status: "pending",
+      createdAt: iso(-1),
+    },
+  ];
+
   return {
     counter: 1043,
+    clients,
+    projects,
     settings: {
       businessName: "Matt Lane Photography",
       ownerName: "Matt Lane",
@@ -143,9 +187,20 @@ function seed(): Store {
         lineItems: [{ description: "Fine-art album (30 spreads)", qty: 1, unitPrice: 900 }],
       },
     ],
-    clients: invoices.map((i) => i.client),
     invoices,
   };
+}
+
+function normalize(s: Store): Store {
+  if (!Array.isArray(s.projects)) s.projects = [];
+  if (!Array.isArray(s.clients)) s.clients = [];
+  // Backfill first-class clients from any invoices that reference unknown clients.
+  for (const inv of s.invoices || []) {
+    if (inv.client && !s.clients.find((c) => c.id === inv.client.id)) {
+      s.clients.push(inv.client);
+    }
+  }
+  return s;
 }
 
 function ensure(): Store {
@@ -155,7 +210,7 @@ function ensure(): Store {
     fs.writeFileSync(DATA_FILE, JSON.stringify(s, null, 2));
     return s;
   }
-  return JSON.parse(fs.readFileSync(DATA_FILE, "utf8")) as Store;
+  return normalize(JSON.parse(fs.readFileSync(DATA_FILE, "utf8")) as Store);
 }
 
 export function read(): Store {
@@ -175,4 +230,8 @@ export function amountDue(inv: Invoice): number {
   const total = lineItemsTotal(inv.lineItems);
   if (inv.depositPercent > 0) return Math.round(total * (inv.depositPercent / 100));
   return total;
+}
+
+export function clientName(store: Store, clientId: string): string {
+  return store.clients.find((c) => c.id === clientId)?.name || "Client";
 }

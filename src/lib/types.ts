@@ -16,6 +16,23 @@ export type Client = {
   name: string;
   email: string;
   phone?: string;
+  notes?: string;
+};
+
+export type ProjectStatus = "pending" | "invoiced";
+
+export type Project = {
+  id: string;
+  clientId: string;
+  title: string;
+  eventType: string;
+  eventDate?: string;
+  workItems: LineItem[];
+  notes?: string;
+  depositPercent: number;
+  status: ProjectStatus;
+  invoiceId?: string;
+  createdAt: string;
 };
 
 export type InvoiceStatus = "draft" | "sent" | "paid";
@@ -59,6 +76,7 @@ export type Store = {
   settings: Settings;
   packages: Package[];
   clients: Client[];
+  projects: Project[];
   invoices: Invoice[];
   counter: number;
 };

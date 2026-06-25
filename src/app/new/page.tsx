@@ -5,9 +5,10 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Logo } from "@/components/Logo";
 import { money } from "@/lib/format";
-import type { Package, Client, LineItem, Settings } from "@/lib/types";
+import type { Package, Client, LineItem, Settings, Project } from "@/lib/types";
 
-type Boot = { settings: Settings; packages: Package[]; clients: Client[] };
+type ProjectWithClient = Project & { client: Client | null };
+type Boot = { settings: Settings; packages: Package[]; clients: Client[]; projects: ProjectWithClient[] };
 
 const EVENT_TYPES = ["Wedding — Full Day", "Wedding — Half Day", "Engagement Session", "Elopement", "Photography"];
 
@@ -24,6 +25,8 @@ export default function NewInvoice() {
   const [depositPercent, setDepositPercent] = useState(0);
   const [dueInDays, setDueInDays] = useState(14);
   const [activePkg, setActivePkg] = useState<string[]>([]);
+  const [clientId, setClientId] = useState<string | null>(null);
+  const [projectId, setProjectId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
@@ -35,8 +38,41 @@ export default function NewInvoice() {
         setNotes(b.settings.payNote);
         setDepositPercent(b.settings.defaultDepositPercent);
         setDueInDays(b.settings.defaultDueInDays);
+        const pid = new URLSearchParams(window.location.search).get("project");
+        if (pid) {
+          const proj = b.projects.find((p) => p.id === pid);
+          if (proj) applyProject(proj, b.settings.defaultDueInDays);
+        }
       });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  function applyProject(p: ProjectWithClient, fallbackDue = 14) {
+    setProjectId(p.id);
+    setClientId(p.clientId);
+    setClientName(p.client?.name || "");
+    setClientEmail(p.client?.email || "");
+    setClientPhone(p.client?.phone || "");
+    setEventType(p.eventType || "Photography");
+    setEventDate(p.eventDate ? p.eventDate.slice(0, 10) : "");
+    setItems(p.workItems.map((li) => ({ ...li })));
+    setDepositPercent(p.depositPercent || 0);
+    setDueInDays(fallbackDue);
+    if (p.notes) setNotes(p.notes);
+    setActivePkg([]);
+  }
+
+  function applyClient(c: Client) {
+    setClientId(c.id);
+    setClientName(c.name);
+    setClientEmail(c.email || "");
+    setClientPhone(c.phone || "");
+  }
+
+  function clearSelection() {
+    setProjectId(null);
+    setClientId(null);
+  }
 
   const total = useMemo(() => items.reduce((s, li) => s + li.qty * li.unitPrice, 0), [items]);
   const due = depositPercent > 0 ? Math.round(total * (depositPercent / 100)) : total;
@@ -79,6 +115,8 @@ export default function NewInvoice() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         client: { name: clientName, email: clientEmail, phone: clientPhone },
+        clientId: clientId || undefined,
+        projectId: projectId || undefined,
         eventType,
         eventDate: eventDate || undefined,
         lineItems: items,
@@ -115,9 +153,74 @@ export default function NewInvoice() {
           <p className="text-muted mt-1">Tap a package, confirm the client, send. That&apos;s it.</p>
         </div>
 
+        {/* Existing client / pending project */}
+        {boot && (boot.projects.length > 0 || boot.clients.length > 0) && (
+          <section className="card p-5 mb-7 bg-blush/40 !border-clay/20">
+            <p className="label">Start from an existing client or project</p>
+
+            {boot.projects.length > 0 && (
+              <div className="flex flex-wrap gap-2 mb-3">
+                {boot.projects.map((p) => (
+                  <button
+                    key={p.id}
+                    onClick={() => applyProject(p, dueInDays)}
+                    className={`btn ${projectId === p.id ? "btn-dark" : "btn-ghost"} !px-3.5 !py-2.5 text-left`}
+                  >
+                    <span className="text-base leading-none">📋</span>
+                    <span className="flex flex-col items-start leading-tight">
+                      <span className="font-semibold">{p.client?.name || "Client"}</span>
+                      <span className="text-xs opacity-70">{p.eventType}</span>
+                    </span>
+                  </button>
+                ))}
+              </div>
+            )}
+
+            <div className="flex items-center gap-2">
+              <select
+                className="input flex-1"
+                value={clientId && !projectId ? clientId : ""}
+                onChange={(e) => {
+                  const c = boot.clients.find((x) => x.id === e.target.value);
+                  if (c) applyClient(c);
+                }}
+              >
+                <option value="">Or pick an existing client…</option>
+                {boot.clients.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+              {(clientId || projectId) && (
+                <button
+                  onClick={() => {
+                    clearSelection();
+                    setClientName("");
+                    setClientEmail("");
+                    setClientPhone("");
+                  }}
+                  className="btn btn-ghost !py-2.5 shrink-0"
+                >
+                  Clear
+                </button>
+              )}
+            </div>
+
+            {projectId && (
+              <p className="text-clay-deep text-xs mt-2.5 flex items-center gap-1.5">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M20 6 9 17l-5-5" />
+                </svg>
+                Prefilled from saved project — invoicing this will clear it from pending work.
+              </p>
+            )}
+          </section>
+        )}
+
         {/* Packages */}
         <section className="mb-7">
-          <p className="label">Start from a package</p>
+          <p className="label">{items.length > 0 ? "Add more from a package" : "Start from a package"}</p>
           <div className="flex flex-wrap gap-2">
             {boot?.packages.map((pkg) => {
               const on = activePkg.includes(pkg.id);

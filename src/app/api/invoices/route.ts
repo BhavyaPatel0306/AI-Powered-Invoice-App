@@ -37,11 +37,17 @@ export async function POST(req: NextRequest) {
   const now = new Date().toISOString();
   const sendNow = body.send !== false;
 
+  // Resolve to an existing client when possible (by id or email), else create one.
+  const existing =
+    (body.clientId && s.clients.find((c) => c.id === body.clientId)) ||
+    (body.client.email && s.clients.find((c) => c.email && c.email === body.client.email.trim())) ||
+    undefined;
+
   const client = {
-    id: id("cl_"),
+    id: existing ? existing.id : id("cl_"),
     name: body.client.name.trim(),
-    email: (body.client.email || "").trim(),
-    phone: (body.client.phone || "").trim() || undefined,
+    email: (body.client.email || existing?.email || "").trim(),
+    phone: (body.client.phone || existing?.phone || "").trim() || undefined,
   };
 
   const invoice: Invoice = {
@@ -65,8 +71,22 @@ export async function POST(req: NextRequest) {
   };
 
   s.invoices.push(invoice);
-  if (!s.clients.find((c) => c.email && c.email === client.email)) {
+  const known = s.clients.find((c) => c.id === client.id);
+  if (known) {
+    known.name = client.name;
+    if (client.email) known.email = client.email;
+    if (client.phone) known.phone = client.phone;
+  } else {
     s.clients.push(client);
+  }
+
+  // If generated from a saved project, mark it invoiced and link them.
+  if (body.projectId) {
+    const project = s.projects.find((p) => p.id === body.projectId);
+    if (project) {
+      project.status = "invoiced";
+      project.invoiceId = invoice.id;
+    }
   }
 
   let emailSent = false;
