@@ -1,36 +1,44 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Frame — get paid faster
 
-## Getting Started
+Invoicing built for photographers who are always in the field. Matt finishes a
+shoot, taps a saved package, confirms the couple, and sends a beautiful invoice
+with a secure **Pay Now** link — in under 30 seconds, from his phone. No more
+waiting until he's back at the desk days later.
 
-First, run the development server:
+## Why this gets Matt paid faster
+
+1. **Seconds to send.** Saved packages (Wedding Full Day, Engagement, Elopement…)
+   pre-fill the line items. Pick → confirm client → send.
+2. **One-tap online payment.** Clients open a branded link and pay by card
+   immediately — no bank transfers, no "I'll mail a check."
+3. **Deposits up front.** Collect a 25%/50% deposit the moment the invoice goes out.
+4. **It nudges itself.** See when a client opened the invoice and send a reminder
+   in one tap.
+5. **Send from anywhere.** Email or text the link straight from the field.
+
+## Run it
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+# open http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Demo data (Matt Lane Photography + sample invoices) is seeded automatically on
+first run into `.data/store.json`. Delete that file to reset to a clean slate.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Flow to try
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. **Dashboard** (`/`) — outstanding balance, collected this month, avg. time to pay.
+2. **New invoice** (`/new`) — tap a package, add the client, hit *Send invoice*.
+3. **Share** — copy the secure link or send by email/text; watch the activity timeline.
+4. **Client view** (`/pay/<id>`) — what the couple sees; pay by card → 🎉 confetti.
 
-## Learn More
+## Stack
 
-To learn more about Next.js, take a look at the following resources:
+- Next.js 16 (App Router) + React 19 + TypeScript
+- Tailwind CSS v4 with a custom editorial theme (Fraunces + Inter)
+- Zero-config JSON file persistence (`src/lib/db.ts`) — no database to set up
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+> `patch-os.js` is a tiny dev shim that makes `os.networkInterfaces()` fail safe
+> inside restricted sandboxes; it's harmless everywhere else.
