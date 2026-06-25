@@ -14,7 +14,7 @@ const fraunces = Fraunces({
 });
 
 export const metadata: Metadata = {
-  title: "Frame — Invoices for photographers, sent in seconds",
+  title: "FlintFramePro — Invoices for photographers, sent in seconds",
   description:
     "Send a beautiful invoice with an online Pay Now link from anywhere. Built for photographers in the field.",
 };

@@ -84,7 +84,7 @@ function renderEmail(opts: {
       <p style="text-align:center;color:#7c736a;font-size:12px;margin-top:18px;">
         Questions? Just reply to this email — ${settings.email}
       </p>
-      <p style="text-align:center;color:#b3aa9e;font-size:11px;margin-top:6px;">Sent with Frame</p>
+      <p style="text-align:center;color:#b3aa9e;font-size:11px;margin-top:6px;">Sent with FlintFramePro</p>
     </div>
   </body>
 </html>`;

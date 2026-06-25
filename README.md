@@ -1,4 +1,4 @@
-# Frame — get paid faster
+# FlintFramePro — get paid faster
 
 Invoicing built for photographers who are always in the field. Matt finishes a
 shoot, taps a saved package, confirms the couple, and sends a beautiful invoice

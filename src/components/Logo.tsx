@@ -8,7 +8,7 @@ export function Logo({ subtle = false }: { subtle?: boolean }) {
         <span className="w-1.5 h-1.5 rounded-full bg-clay" />
       </span>
       <span className="leading-none">
-        <span className="font-display text-xl tracking-tight">Frame</span>
+        <span className="font-display text-xl tracking-tight">FlintFramePro</span>
         {!subtle && (
           <span className="block text-[0.62rem] uppercase tracking-[0.2em] text-muted mt-0.5">
             Get paid faster
