@@ -5,11 +5,22 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Logo } from "@/components/Logo";
 import { money } from "@/lib/format";
+import { DictationDialog, type DictStep } from "@/components/DictationDialog";
 import type { Package, LineItem, Settings } from "@/lib/types";
 
 type Boot = { settings: Settings; packages: Package[] };
 
 const EVENT_TYPES = ["Wedding — Full Day", "Wedding — Half Day", "Engagement Session", "Elopement", "Photography"];
+
+const DICT_STEPS: DictStep[] = [
+  { key: "packages", type: "packages", label: "Which package(s) / work?", hint: "e.g. “Full day wedding and an album” — or skip", optional: true },
+  { key: "clientName", type: "text", label: "Client name", hint: "e.g. “Sofia and James Okafor”" },
+  { key: "email", type: "email", label: "Client email", hint: "Say it, or skip", optional: true },
+  { key: "phone", type: "phone", label: "Client phone", hint: "Say it, or skip", optional: true },
+  { key: "eventType", type: "eventType", label: "Event type", hint: "e.g. “full day wedding”", optional: true },
+  { key: "eventDate", type: "date", label: "Event date", hint: "e.g. “August 9th”", optional: true },
+  { key: "depositPercent", type: "depositPercent", label: "Deposit?", hint: "e.g. “fifty percent”, or “pay in full”", optional: true },
+];
 
 export default function NewClientProject() {
   const router = useRouter();
@@ -27,6 +38,7 @@ export default function NewClientProject() {
   const [activePkg, setActivePkg] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [dictating, setDictating] = useState(false);
 
   useEffect(() => {
     fetch("/api/bootstrap")
@@ -58,6 +70,37 @@ export default function NewClientProject() {
   }
   function addBlank() {
     setItems((prev) => [...prev, { description: "", qty: 1, unitPrice: 0 }]);
+  }
+
+  function applyDictation(values: Record<string, unknown>) {
+    const names = Array.isArray(values.packages) ? (values.packages as string[]) : [];
+    if (names.length && boot) {
+      const matched = boot.packages.filter((p) => names.includes(p.name));
+      if (matched.length) {
+        const seen = new Set<string>();
+        const built: LineItem[] = [];
+        matched.forEach((p) =>
+          p.lineItems.forEach((li) => {
+            if (!seen.has(li.description)) {
+              seen.add(li.description);
+              built.push({ ...li });
+            }
+          })
+        );
+        setItems(built);
+        setActivePkg(matched.map((p) => p.id));
+      }
+    }
+    if (typeof values.clientName === "string" && values.clientName) setName(values.clientName);
+    if (typeof values.email === "string" && values.email) setEmail(values.email);
+    if (typeof values.phone === "string" && values.phone) setPhone(values.phone);
+    if (typeof values.eventType === "string" && EVENT_TYPES.includes(values.eventType))
+      setEventType(values.eventType);
+    if (typeof values.eventDate === "string" && /^\d{4}-\d{2}-\d{2}$/.test(values.eventDate))
+      setEventDate(values.eventDate);
+    if (typeof values.depositPercent === "number" && [0, 25, 50].includes(values.depositPercent))
+      setDepositPercent(values.depositPercent);
+    setDictating(false);
   }
 
   async function submit() {
@@ -98,11 +141,20 @@ export default function NewClientProject() {
       </header>
 
       <main className="mx-auto max-w-2xl px-5">
-        <div className="pt-7 pb-5">
-          <h1 className="font-display text-3xl tracking-tight">New client &amp; project</h1>
-          <p className="text-muted mt-1">
-            Capture the booking now — the work, the costs, the details. Invoice it whenever you&apos;re ready.
-          </p>
+        <div className="pt-7 pb-5 flex items-start justify-between gap-4">
+          <div>
+            <h1 className="font-display text-3xl tracking-tight">New client &amp; project</h1>
+            <p className="text-muted mt-1">
+              Capture the booking now — the work, the costs, the details. Invoice it whenever you&apos;re ready.
+            </p>
+          </div>
+          <button onClick={() => setDictating(true)} className="btn btn-dark shrink-0 mt-1" title="Fill this in by voice">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z" />
+              <path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v3" />
+            </svg>
+            Dictate
+          </button>
         </div>
 
         {/* Client */}
@@ -224,6 +276,17 @@ export default function NewClientProject() {
           </button>
         </div>
       </div>
+
+      {dictating && boot && (
+        <DictationDialog
+          title="Dictate this booking"
+          steps={DICT_STEPS}
+          packages={boot.packages.map((p) => ({ id: p.id, name: p.name }))}
+          eventTypes={EVENT_TYPES}
+          onClose={() => setDictating(false)}
+          onComplete={applyDictation}
+        />
+      )}
     </div>
   );
 }
