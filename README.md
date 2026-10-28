@@ -66,12 +66,13 @@ Local JSON storage keeps the prototype easy to explore, but is not a substitute 
 ## Verification and limitations
 
 ```sh
+node --test tests/invoice-math.test.mjs
 npm run lint
 npm run build
 ```
 
-These are the available project checks, not a claim that they were rerun for this documentation update. This repository currently has no automated test suite or GitHub Actions workflow.
+Eight invoice arithmetic regression tests run with Node.js 24 and no dependency installation. [GitHub Actions](https://github.com/BhavyaPatel0306/AI-Powered-Invoice-App/actions/workflows/invoice-tests.yml) runs them on pushes and pull requests. See the [rounding investigation](docs/invoice-rounding.md) for the observed failure, correction and hosted evidence. Lint, build and browser flows were not rerun during this change.
 
-This is a local portfolio prototype, not a production billing system. Payment-related interface wording represents a demo workflow; no payment gateway, verified settlement, or secure production payment claim is made. No measured time-to-invoice or revenue improvement is claimed.
+This is a local portfolio prototype, not a production billing system. Checkout, sharing and email wording explicitly label the demo; no payment gateway, verified settlement, or secure production payment claim is made. No measured time-to-invoice or revenue improvement is claimed.
 
-Next steps are to label simulated payments throughout the interface, add tests for invoice calculations and intake failures, and evaluate authentication and persistence before considering public deployment.
+Next steps are to test intake failures and browser flows, and evaluate authentication and persistence before considering public deployment.
