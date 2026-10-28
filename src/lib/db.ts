@@ -230,8 +230,8 @@ export function lineItemsTotal(items: LineItem[]): number {
 export function amountDue(inv: Invoice): number {
   const total = lineItemsTotal(inv.lineItems);
   if (inv.depositPercent > 0) {
-    const deposit = total * (inv.depositPercent / 100);
-    return Math.round((deposit + Number.EPSILON) * 100) / 100;
+    const totalCents = Math.round(total * 100);
+    return Math.round(totalCents * inv.depositPercent / 100) / 100;
   }
   return total;
 }
