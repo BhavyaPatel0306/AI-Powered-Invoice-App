@@ -40,8 +40,8 @@ function renderEmail(opts: {
     .join("");
 
   const intro = reminder
-    ? `Just a friendly reminder about your invoice below — whenever you have a moment, you can view and pay it securely online.`
-    : `Thank you so much! Here's your invoice. You can view everything and pay securely online in just a couple of taps.`;
+    ? `Reminder: this is a demonstration invoice. The linked checkout simulates a payment; no money is collected.`
+    : `This is a demonstration invoice. You can preview the invoice and simulated checkout. No money is collected.`;
 
   return `<!doctype html>
 <html>
@@ -63,7 +63,7 @@ function renderEmail(opts: {
         </div>
 
         <a href="${link}" style="display:block;text-align:center;background:#bd5c3a;color:#ffffff;text-decoration:none;font-weight:600;font-size:16px;padding:15px;border-radius:999px;">
-          View &amp; pay securely
+          View demo invoice
         </a>
 
         <table style="width:100%;border-collapse:collapse;margin-top:24px;">
@@ -113,8 +113,8 @@ export async function sendInvoiceEmail(opts: {
   const from = process.env.EMAIL_FROM || `${settings.businessName} <onboarding@resend.dev>`;
   const link = `${baseUrl}/pay/${invoice.publicId}`;
   const subject = reminder
-    ? `Reminder: invoice ${invoice.number} from ${settings.businessName}`
-    : `Your invoice from ${settings.businessName} — ${invoice.number}`;
+    ? `Demo reminder: invoice ${invoice.number} from ${settings.businessName}`
+    : `Demo invoice from ${settings.businessName} — ${invoice.number}`;
 
   try {
     const { data, error } = await resend.emails.send({

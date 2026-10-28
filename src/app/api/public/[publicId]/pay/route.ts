@@ -14,7 +14,7 @@ export async function POST(_req: NextRequest, ctx: { params: Promise<{ publicId:
     const now = new Date().toISOString();
     inv.status = "paid";
     inv.paidAt = now;
-    inv.events.push({ type: "paid", at: now, note: "Paid online via card" });
+    inv.events.push({ type: "paid", at: now, note: "Simulated payment; no money collected" });
     write(s);
   }
 

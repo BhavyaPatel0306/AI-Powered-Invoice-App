@@ -75,7 +75,7 @@ export function InvoiceActions({
     }
   }
 
-  const smsBody = encodeURIComponent(`Hi! Here's your invoice — view & pay securely: ${link}`);
+  const smsBody = encodeURIComponent(`Demo invoice — preview only; no money is collected: ${link}`);
   const sms = `sms:${invoice.client.phone || ""}?&body=${smsBody}`;
 
   const isPaid = invoice.status === "paid";
@@ -89,7 +89,7 @@ export function InvoiceActions({
           </p>
           <p className="text-bg/70 text-sm mt-1">
             {createdState === "sent"
-              ? "Share the secure link below so they can pay in two taps."
+              ? "Share the demo link below to preview the invoice and simulated checkout."
               : "Send it whenever you're ready."}
           </p>
         </div>
@@ -97,7 +97,7 @@ export function InvoiceActions({
 
       {/* Share link */}
       <div className="card p-5">
-        <p className="label">Secure payment link</p>
+        <p className="label">Demo invoice link</p>
         <div className="flex items-center gap-2">
           <input readOnly value={link} className="input flex-1 text-sm !py-2.5 text-muted" />
           <button onClick={copy} className="btn btn-dark !py-2.5 shrink-0">
@@ -155,11 +155,11 @@ export function InvoiceActions({
               {busy === "remind" ? "Sending…" : "Send reminder"}
             </button>
             <button
-              onClick={() => act("markPaid", "Marked as paid ✓")}
+              onClick={() => act("markPaid", "Marked as paid in demo ✓")}
               disabled={busy !== null}
               className="btn btn-dark"
             >
-              {busy === "markPaid" ? "Saving…" : "Mark as paid"}
+              {busy === "markPaid" ? "Saving…" : "Mark demo as paid"}
             </button>
           </>
         ) : (

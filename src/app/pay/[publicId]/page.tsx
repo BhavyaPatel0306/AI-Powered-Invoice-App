@@ -64,7 +64,7 @@ export default function PayPage({ params }: { params: Promise<{ publicId: string
             {business.accentInitials}
           </div>
           <h1 className="font-display text-2xl mt-3">{business.businessName}</h1>
-          <p className="text-bg/60 text-sm mt-1">Invoice {inv.number}</p>
+          <p className="text-bg/60 text-sm mt-1">Invoice {inv.number} · Demo only</p>
         </div>
       </div>
 
@@ -77,12 +77,12 @@ export default function PayPage({ params }: { params: Promise<{ publicId: string
                   <path d="M20 6 9 17l-5-5" />
                 </svg>
               </div>
-              <h2 className="font-display text-2xl">Payment received</h2>
+              <h2 className="font-display text-2xl">Simulated payment complete</h2>
               <p className="text-muted mt-1">
-                Thank you, {inv.client.name.split(" ")[0]}! A receipt is on its way to your inbox.
+                Demo completed for {inv.client.name.split(" ")[0]}. No money was collected and no receipt was sent.
               </p>
               <p className="font-display text-4xl mt-5">{money(due)}</p>
-              <p className="text-muted text-sm mt-1">Paid to {business.businessName}</p>
+              <p className="text-muted text-sm mt-1">Demo amount for {business.businessName}</p>
             </div>
           ) : (
             <>
@@ -131,14 +131,14 @@ export default function PayPage({ params }: { params: Promise<{ publicId: string
               )}
 
               <button onClick={() => setShowPay(true)} className="btn btn-primary w-full !py-3.5 mt-6 text-base">
-                Pay {money(due)} securely
+                Preview demo payment of {money(due)}
               </button>
               <p className="text-center text-muted text-xs mt-3 flex items-center justify-center gap-1.5">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <rect x="3" y="11" width="18" height="11" rx="2" />
                   <path d="M7 11V7a5 5 0 0 1 10 0v4" />
                 </svg>
-                Encrypted payment · powered by FlintFramePro
+                Simulated checkout · no money is collected
               </p>
             </>
           )}
@@ -159,20 +159,20 @@ export default function PayPage({ params }: { params: Promise<{ publicId: string
             onClick={() => stage !== "processing" && setShowPay(false)}
           />
           <div className="relative card w-full sm:max-w-md m-0 sm:m-5 rounded-t-3xl sm:rounded-3xl p-6 animate-pop">
-            <p className="label">Pay {money(due)}</p>
+            <p className="label">Simulate payment of {money(due)}</p>
             <div className="space-y-3 mt-1">
               <div>
-                <label className="label">Card number</label>
-                <input className="input" placeholder="4242 4242 4242 4242" defaultValue="4242 4242 4242 4242" />
+                <label className="label">Sample card number (not editable)</label>
+                <input readOnly aria-label="Sample card number" className="input" placeholder="4242 4242 4242 4242" defaultValue="4242 4242 4242 4242" />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="label">Expiry</label>
-                  <input className="input" placeholder="MM/YY" defaultValue="12/28" />
+                  <input readOnly aria-label="Sample expiry" className="input" placeholder="MM/YY" defaultValue="12/28" />
                 </div>
                 <div>
                   <label className="label">CVC</label>
-                  <input className="input" placeholder="123" defaultValue="123" />
+                  <input readOnly aria-label="Sample security code" className="input" placeholder="123" defaultValue="123" />
                 </div>
               </div>
             </div>
@@ -180,13 +180,13 @@ export default function PayPage({ params }: { params: Promise<{ publicId: string
               {stage === "processing" ? (
                 <>
                   <span className="w-4 h-4 rounded-full border-2 border-white/40 border-t-white animate-spin" />
-                  Processing…
+                  Simulating…
                 </>
               ) : (
-                `Pay ${money(due)}`
+                `Simulate ${money(due)} payment`
               )}
             </button>
-            <p className="text-center text-muted text-xs mt-3">Demo checkout — no real charge is made.</p>
+            <p className="text-center text-muted text-xs mt-3">Demo checkout only. Do not enter real card details. No charge is made.</p>
           </div>
         </div>
       )}
