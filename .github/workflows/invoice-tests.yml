@@ -1,0 +1,16 @@
+name: Invoice regression tests
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  invoice-math:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Test invoice totals and deposits
+        run: node --test tests/invoice-math.test.mjs

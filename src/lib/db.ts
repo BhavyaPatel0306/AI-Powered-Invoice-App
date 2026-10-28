@@ -223,12 +223,16 @@ export function write(store: Store): void {
 }
 
 export function lineItemsTotal(items: LineItem[]): number {
-  return items.reduce((sum, li) => sum + li.qty * li.unitPrice, 0);
+  const total = items.reduce((sum, li) => sum + li.qty * li.unitPrice, 0);
+  return Math.round((total + Number.EPSILON) * 100) / 100;
 }
 
 export function amountDue(inv: Invoice): number {
   const total = lineItemsTotal(inv.lineItems);
-  if (inv.depositPercent > 0) return Math.round(total * (inv.depositPercent / 100));
+  if (inv.depositPercent > 0) {
+    const totalCents = Math.round(total * 100);
+    return Math.round(totalCents * inv.depositPercent / 100) / 100;
+  }
   return total;
 }
 
